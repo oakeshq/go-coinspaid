@@ -33,7 +33,7 @@ type ErrorResponse struct {
 }
 
 func (r *ErrorResponse) Error() string {
-	return fmt.Sprintf("%v %v: %d %v:%v",
+	return fmt.Sprintf("%v %v - %d %v %v",
 		r.Response.Request.Method, r.Response.Request.URL, r.Response.StatusCode, r.Message, r.Code)
 }
 
@@ -67,13 +67,13 @@ func (client *Client) doRequest(req *http.Request, v interface{}) (*http.Respons
 
 	defer res.Body.Close()
 
-	err = json.NewDecoder(res.Body).Decode(&v)
+	err = checkResponse(res)
 
 	if err != nil {
 		return nil, err
 	}
 
-	err = checkResponse(res)
+	err = json.NewDecoder(res.Body).Decode(&v)
 
 	return res, err
 }

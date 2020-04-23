@@ -21,9 +21,14 @@ const (
 			"foreign_id": "user-id:2048"
 		}
 	}`
+
+	invalidAuthResponse = `{
+		"error": "Bad key header",
+		"code": "bad_header_key"
+	}`
 )
 
-func TestClient(t *testing.T) {
+func TestTakeAddress(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.Write([]byte(okResponse))
 	}))
@@ -48,4 +53,32 @@ func TestClient(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, takeAddressInput.Currency, address.Currency)
+}
+
+func TestClientWithInvalidAuth(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.WriteHeader(http.StatusForbidden)
+		rw.Write([]byte(invalidAuthResponse))
+	}))
+
+	defer server.Close()
+
+	baseURL, _ := url.Parse(server.URL)
+
+	api := Client{
+		apiKey:     "invalid",
+		apiSecret:  "invalid",
+		httpClient: server.Client(),
+		baseURL:    baseURL,
+	}
+
+	takeAddressInput := &TakeAddressInput{
+		ForeignID: "user-id:2048",
+		Currency:  "EUR",
+	}
+
+	_, err := api.TakeAddress(takeAddressInput)
+
+	assert.NotNil(t, err)
+	assert.Equal(t, "bad_header_key", err.(*ErrorResponse).Code)
 }
