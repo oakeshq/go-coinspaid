@@ -37,6 +37,17 @@ func (r *ErrorResponse) Error() string {
 		r.Response.Request.Method, r.Response.Request.URL, r.Response.StatusCode, r.Message, r.Code)
 }
 
+// ValidationErrorResponse holds the error messages received from the API for validation errors
+type ValidationErrorResponse struct {
+	Response *http.Response
+	Errors   map[string]string `json:"errors"`
+}
+
+func (r *ValidationErrorResponse) Error() string {
+	return fmt.Sprintf("%v %v - %d %v",
+		r.Response.Request.Method, r.Response.Request.URL, r.Response.StatusCode, r.Errors)
+}
+
 // NewClient returns a new instance of the Coinspaid client with the provided options
 func NewClient(apiKey string, apiSecret string) *Client {
 
@@ -160,15 +171,25 @@ func checkResponse(r *http.Response) error {
 		return nil
 	}
 
+	errorResponse := &ErrorResponse{Response: r}
+
 	body, err := ioutil.ReadAll(r.Body)
 
-	errorResponse := &ErrorResponse{Response: r}
+	if err != nil {
+		return errorResponse
+	}
 
 	if err == nil && len(body) > 0 {
 		err := json.Unmarshal(body, errorResponse)
 		if err != nil {
 			errorResponse.Message = string(body)
 		}
+	}
+
+	if r.StatusCode == http.StatusBadRequest {
+		validationErrorResponse := &ValidationErrorResponse{Response: r}
+		err = json.Unmarshal(body, validationErrorResponse)
+		return validationErrorResponse
 	}
 
 	return errorResponse

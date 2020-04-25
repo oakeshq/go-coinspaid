@@ -26,6 +26,12 @@ const (
 		"error": "Bad key header",
 		"code": "bad_header_key"
 	}`
+
+	badRequestResponse = `{
+		"errors": {
+			"foreign_id": "The foreign id field is required."
+		}
+	}`
 )
 
 func TestTakeAddress(t *testing.T) {
@@ -81,4 +87,31 @@ func TestClientWithInvalidAuth(t *testing.T) {
 
 	assert.NotNil(t, err)
 	assert.Equal(t, "bad_header_key", err.(*ErrorResponse).Code)
+}
+
+func TestClientWithBadRequest(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.WriteHeader(http.StatusBadRequest)
+		rw.Write([]byte(badRequestResponse))
+	}))
+
+	defer server.Close()
+
+	baseURL, _ := url.Parse(server.URL)
+
+	api := Client{
+		apiKey:     "invalid",
+		apiSecret:  "invalid",
+		httpClient: server.Client(),
+		baseURL:    baseURL,
+	}
+
+	takeAddressInput := &TakeAddressInput{
+		Currency: "INEXISTENT",
+	}
+
+	_, err := api.TakeAddress(takeAddressInput)
+
+	assert.NotNil(t, err)
+	assert.NotNil(t, err.(*ValidationErrorResponse).Errors)
 }
