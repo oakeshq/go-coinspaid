@@ -1,6 +1,7 @@
 package coinspaid
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -32,6 +33,20 @@ const (
 			"foreign_id": "The foreign id field is required."
 		}
 	}`
+
+	withdrawCryptoOkResponse = `{
+		"data": {
+			"id": 1,
+			"foreign_id": "user-id:2048",
+			"type": "withdrawal",
+			"status": "processing",
+			"amount": "0.01000000",
+			"sender_amount": "0.01000000",
+			"sender_currency": "ETH",
+			"receiver_amount": "0.01000000",
+			"receiver_currency": "ETH"
+		}
+	}`
 )
 
 func TestTakeAddress(t *testing.T) {
@@ -59,6 +74,36 @@ func TestTakeAddress(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, takeAddressInput.Currency, address.Currency)
+}
+
+func TestWithdrawCrypto(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.Write([]byte(withdrawCryptoOkResponse))
+	}))
+
+	defer server.Close()
+
+	baseURL, _ := url.Parse(server.URL)
+
+	api := Client{
+		apiKey:     "key",
+		apiSecret:  "secret",
+		httpClient: server.Client(),
+		baseURL:    baseURL,
+	}
+
+	withdrawCryptoInput := &WithdrawCryptoInput{
+		ForeignID: "user-id:2048",
+		Amount:  200000000,
+		Currency:  "BTC",
+		Address:  "3P3QsMVK89JBNqZQv5zMAKG8FK3kJM4rjt",
+	}
+
+	response, err := api.WithdrawCrypto(withdrawCryptoInput)
+	fmt.Printf("%+v", response)
+
+	assert.Nil(t, err)
+	assert.Equal(t, withdrawCryptoInput.ForeignID, response.ForeignID)
 }
 
 func TestClientWithInvalidAuth(t *testing.T) {

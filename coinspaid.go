@@ -166,6 +166,95 @@ func (client *Client) TakeAddress(input *TakeAddressInput) (*Address, error) {
 	return address, nil
 }
 
+// WithdrawCryptoInput specifies the parameters the WithdrawCrypto method accepts.
+type WithdrawCryptoInput struct {
+	// Unique foreign ID in your system, example: "122929"
+	ForeignID string `json:"foreign_id"`
+
+	// Amount of funds to withdraw, example: "3500"
+	Amount int64 `json:"amount"`
+
+	// ISO of currency to receive funds in, example: BTC
+	Currency string `json:"currency"`
+
+	// Cryptocurrency address where you want to send funds.
+	Address string `json:"address"`
+
+	// Tag (if it's Ripple or BNB) or memo (if it's Bitshares or EOS)
+	Tag string `json:"tag"`
+}
+
+// UnmarshalJSON parses the request from server in the expected format
+func (a *WithdrawCryptoPayload) UnmarshalJSON(data []byte) error {
+	type Alias WithdrawCryptoPayload
+
+	var temp struct {
+		Data Alias `json:"data"`
+	}
+
+	err := json.Unmarshal(data, &temp)
+
+	if err != nil {
+		return nil
+	}
+
+	*a = WithdrawCryptoPayload(temp.Data)
+	return nil
+}
+
+// WithdrawCryptoPayload holds the data returned from the API
+type WithdrawCryptoPayload struct {
+	ID        int64    `json:"id"`
+	ForeignID string `json:"foreign_id"`
+	Type string `json:"type"`
+	Status string `json:"status"`
+	Amount string `json:"amount"`
+	SenderCurrency string `json:"sender_currency"`
+	SenderAmount string `json:"sender_amount"`
+	ReceiverCurrency string `json:"receiver_currency"`
+	ReceiverAmount string `json:"receiver_amount"`
+}
+
+// WithdrawCrypto Withdraw crypto to any specified address.
+func (client *Client) WithdrawCrypto(input *WithdrawCryptoInput) (*WithdrawCryptoPayload, error) {
+
+	relativeURL := &url.URL{Path: "withdrawal/crypto"}
+	url := client.baseURL.ResolveReference(relativeURL)
+
+	j, err := json.Marshal(input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", url.String(), bytes.NewReader(j))
+
+	if err != nil {
+		return nil, err
+	}
+
+	signedBody, err := client.createSignedRequestHeader(j)
+
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Processing-Key", client.apiKey)
+	req.Header.Set("X-Processing-Signature", signedBody)
+
+	withdrawCryptoPayload := &WithdrawCryptoPayload{}
+
+	_, err = client.doRequest(req, &withdrawCryptoPayload)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return withdrawCryptoPayload, nil
+}
+
 func checkResponse(r *http.Response) error {
 	if c := r.StatusCode; c >= 200 && c <= 299 {
 		return nil
