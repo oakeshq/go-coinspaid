@@ -7,7 +7,7 @@ go-coinspaid is a Go client library for accessing the [Coinspaid API](https://do
 ### *go get*
 
 ```golang
-go get -u github.com/winhq/go-coinspaid
+go get -u github.com/oakeshq/go-coinspaid
 ```
 
 ## Example
@@ -17,7 +17,7 @@ go get -u github.com/winhq/go-coinspaid
 import (
   "fmt"
 
-  "github.com/winhq/go-coinspaid"
+  "github.com/oakeshq/go-coinspaid"
 )
 
 func main() {

@@ -1,4 +1,4 @@
-module github.com/winhq/go-coinspaid
+module github.com/oakeshq/go-coinspaid
 
 go 1.14
 
