@@ -1,7 +1,6 @@
 package coinspaid
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -100,10 +99,10 @@ func TestWithdrawCrypto(t *testing.T) {
 	}
 
 	response, err := api.WithdrawCrypto(withdrawCryptoInput)
-	fmt.Printf("%+v", response)
 
 	assert.Nil(t, err)
 	assert.Equal(t, withdrawCryptoInput.ForeignID, response.ForeignID)
+	assert.Equal(t, string(response.ID), "1")
 }
 
 func TestClientWithInvalidAuth(t *testing.T) {

@@ -84,7 +84,7 @@ func (client *Client) doRequest(req *http.Request, v interface{}) (*http.Respons
 		return nil, err
 	}
 
-	err = json.NewDecoder(res.Body).Decode(&v)
+	err = json.NewDecoder(res.Body).Decode(v)
 
 	return res, err
 }
@@ -110,7 +110,7 @@ func (a *Address) UnmarshalJSON(data []byte) error {
 	err := json.Unmarshal(data, &temp)
 
 	if err != nil {
-		return nil
+		return err
 	}
 
 	*a = Address(temp.Data)
@@ -155,7 +155,7 @@ func (client *Client) TakeAddress(input *TakeAddressInput) (*Address, error) {
 	req.Header.Set("X-Processing-Key", client.apiKey)
 	req.Header.Set("X-Processing-Signature", signedBody)
 
-	address := &Address{}
+	var address Address
 
 	_, err = client.doRequest(req, &address)
 
@@ -163,7 +163,13 @@ func (client *Client) TakeAddress(input *TakeAddressInput) (*Address, error) {
 		return nil, err
 	}
 
-	return address, nil
+	return &address, nil
+}
+
+type ID string
+func (id *ID) UnmarshalJSON(data []byte) error {
+	*id = ID(data)
+	return nil
 }
 
 // WithdrawCryptoInput specifies the parameters the WithdrawCrypto method accepts.
@@ -195,7 +201,7 @@ func (a *WithdrawCryptoPayload) UnmarshalJSON(data []byte) error {
 	err := json.Unmarshal(data, &temp)
 
 	if err != nil {
-		return nil
+		return err
 	}
 
 	*a = WithdrawCryptoPayload(temp.Data)
@@ -204,7 +210,7 @@ func (a *WithdrawCryptoPayload) UnmarshalJSON(data []byte) error {
 
 // WithdrawCryptoPayload holds the data returned from the API
 type WithdrawCryptoPayload struct {
-	ID        int64    `json:"id"`
+	ID        ID    `json:"id"`
 	ForeignID string `json:"foreign_id"`
 	Type string `json:"type"`
 	Status string `json:"status"`
@@ -244,7 +250,7 @@ func (client *Client) WithdrawCrypto(input *WithdrawCryptoInput) (*WithdrawCrypt
 	req.Header.Set("X-Processing-Key", client.apiKey)
 	req.Header.Set("X-Processing-Signature", signedBody)
 
-	withdrawCryptoPayload := &WithdrawCryptoPayload{}
+	var withdrawCryptoPayload WithdrawCryptoPayload
 
 	_, err = client.doRequest(req, &withdrawCryptoPayload)
 
@@ -252,7 +258,7 @@ func (client *Client) WithdrawCrypto(input *WithdrawCryptoInput) (*WithdrawCrypt
 		return nil, err
 	}
 
-	return withdrawCryptoPayload, nil
+	return &withdrawCryptoPayload, nil
 }
 
 func checkResponse(r *http.Response) error {
