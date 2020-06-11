@@ -61,7 +61,7 @@ func TestTakeAddress(t *testing.T) {
 		apiKey:     "key",
 		apiSecret:  "secret",
 		httpClient: server.Client(),
-		baseURL:    baseURL,
+		BaseURL:    baseURL,
 	}
 
 	takeAddressInput := &TakeAddressInput{
@@ -88,7 +88,7 @@ func TestWithdrawCrypto(t *testing.T) {
 		apiKey:     "key",
 		apiSecret:  "secret",
 		httpClient: server.Client(),
-		baseURL:    baseURL,
+		BaseURL:    baseURL,
 	}
 
 	withdrawCryptoInput := &WithdrawCryptoInput{
@@ -119,7 +119,7 @@ func TestClientWithInvalidAuth(t *testing.T) {
 		apiKey:     "invalid",
 		apiSecret:  "invalid",
 		httpClient: server.Client(),
-		baseURL:    baseURL,
+		BaseURL:    baseURL,
 	}
 
 	takeAddressInput := &TakeAddressInput{
@@ -147,7 +147,7 @@ func TestClientWithBadRequest(t *testing.T) {
 		apiKey:     "invalid",
 		apiSecret:  "invalid",
 		httpClient: server.Client(),
-		baseURL:    baseURL,
+		BaseURL:    baseURL,
 	}
 
 	takeAddressInput := &TakeAddressInput{

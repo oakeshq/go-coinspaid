@@ -21,7 +21,7 @@ const (
 type Client struct {
 	apiKey     string
 	apiSecret  string
-	baseURL    *url.URL
+	BaseURL    *url.URL
 	httpClient *http.Client
 }
 
@@ -61,7 +61,7 @@ func NewClient(apiKey string, apiSecret string) *Client {
 		apiKey:     apiKey,
 		apiSecret:  apiSecret,
 		httpClient: httpClient,
-		baseURL:    baseURL,
+		BaseURL:    baseURL,
 	}
 }
 
@@ -130,7 +130,7 @@ type TakeAddressInput struct {
 func (client *Client) TakeAddress(input *TakeAddressInput) (*Address, error) {
 
 	relativeURL := &url.URL{Path: "addresses/take"}
-	url := client.baseURL.ResolveReference(relativeURL)
+	url := client.BaseURL.ResolveReference(relativeURL)
 
 	j, err := json.Marshal(input)
 
@@ -225,7 +225,7 @@ type WithdrawCryptoPayload struct {
 func (client *Client) WithdrawCrypto(input *WithdrawCryptoInput) (*WithdrawCryptoPayload, error) {
 
 	relativeURL := &url.URL{Path: "withdrawal/crypto"}
-	url := client.baseURL.ResolveReference(relativeURL)
+	url := client.BaseURL.ResolveReference(relativeURL)
 
 	j, err := json.Marshal(input)
 
