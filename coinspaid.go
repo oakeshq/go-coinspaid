@@ -6,6 +6,7 @@ import (
 	"crypto/sha512"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -14,7 +15,11 @@ import (
 )
 
 const (
-	baseURL = "https://app.coinspaid.com/api/v2/"
+	// APIBaseLiveURL points to the live version of the API
+	APIBaseLiveURL = "https://app.coinspaid.com/api/v2/"
+
+	// APISBaseSandboxURL points to the sandbox (for testing) version of the API
+	APISBaseSandboxURL = "https://app.sandbox.cryptoprocessing.com/api/v2/"
 )
 
 // Client manages communication with the Coinspaid API.
@@ -49,20 +54,27 @@ func (r *ValidationErrorResponse) Error() string {
 }
 
 // NewClient returns a new instance of the Coinspaid client with the provided options
-func NewClient(apiKey string, apiSecret string) *Client {
+func NewClient(apiKey string, apiSecret string, baseEndpoint string) (*Client, error) {
+	if apiKey == "" || apiSecret == "" || baseEndpoint == "" {
+		return nil, errors.New("apiKey, apiSecret and baseEndpoint are required to create a Client")
+	}
 
 	httpClient := &http.Client{
 		Timeout: time.Second * 10,
 	}
 
-	baseURL, _ := url.Parse(baseURL)
+	baseURL, err := url.Parse(baseEndpoint)
+
+	if err != nil {
+		return nil, errors.New("can't parse base endpoint")
+	}
 
 	return &Client{
 		apiKey:     apiKey,
 		apiSecret:  apiSecret,
 		httpClient: httpClient,
 		BaseURL:    baseURL,
-	}
+	}, nil
 }
 
 func (client *Client) doRequest(req *http.Request, v interface{}) (*http.Response, error) {
