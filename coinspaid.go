@@ -190,7 +190,7 @@ type WithdrawCryptoInput struct {
 	ForeignID string `json:"foreign_id"`
 
 	// Amount of funds to withdraw, example: "3500"
-	Amount int64 `json:"amount"`
+	Amount float64 `json:"amount"`
 
 	// ISO of currency to receive funds in, example: BTC
 	Currency string `json:"currency"`
