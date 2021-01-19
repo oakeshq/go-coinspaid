@@ -1,4 +1,4 @@
-module github.com/oakeshq/go-coinspaid
+module github.com/purposeinplay/go-coinspaid
 
 go 1.14
 
